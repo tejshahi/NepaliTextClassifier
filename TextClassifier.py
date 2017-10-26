@@ -61,13 +61,8 @@ clf3 = Pipeline([
     ('clf', SVC(kernel='rbf'))
 ])
 
-#MLP Neural Network
-clf4=Pipeline([
-        ('vect', tfidfVectorizer),
-         ('clf', MLPClassifier())
-])
-
 #RBF Neural Network
+''' need to implemnet I couldn't find it on SKlearn'''
 #MLP Neural Network
 clf4=Pipeline([
         ('vect', tfidfVectorizer),
