@@ -1,16 +1,12 @@
 #import sklearn
 import nltk
 import scipy as sp
-
-
 from sklearn.datasets import load_mlcomp
-from sklearn.datasets import load_files
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.pipeline import Pipeline
 from sklearn import metrics
-from sklearn.naive_bayes import MultinomialNB,BernoulliNB
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 
@@ -46,7 +42,7 @@ count_vect = CountVectorizer(tokenizer= lambda x: x.split(" "),
                                   max_df=0.5,
                                   min_df=10,
                                   stop_words=stopWords)
-X_train_counts = count_vect.fit_transform(trainNews.data)
+X_train_counts = count_vect.fit_transform(xTrain)
 print(X_train_counts.shape)
 
 '''TF-IDF calculation'''
@@ -56,9 +52,9 @@ print(X_train_tfidf.shape)
 
 #multinomial naive Bayes
 clf1 = Pipeline([
-    ('vect', CountVectorizer()),
-    ('tfidf',TfidfTransformer())
-    ('clf', MultinomialNB(alpha=0.01, fit_prior=True))
+    ('vect', CountVectorizer),
+    ('tfidf',TfidfTransformer)
+    ('clf', MultinomialNB())
 ])
 
 # Linear SVM
@@ -75,9 +71,34 @@ clf3 = Pipeline([
     ('clf', SVC(kernel='rbf'))
 ])
 
-# SVC Poly Kernel
-clf6 = Pipeline([
-    ('vect', tfidfVectorizer),
-    ('clf', SVC(kernel='poly'))
+# MLP Neural Network
+clf4 = Pipeline([
+    ('vect', CountVectorizer()),
+    ('tfidf',TfidfTransformer())
+    ('clf', MLPClassifier(solver='lbfgs', alpha=1e-5,
+                          hidden_layer_sizes=(5, 2),
+                          random_state=1))
 ])
+#Radial Bias Neural Network
+#need to write, I couldnt fint it on Sklearn
 
+def trainAndEvaluate(clf, xTrain, xTest, yTrain, yTest):
+    clf.fit(xTrain, yTrain)
+    print("Accuracy on training Set : ")
+    print(clf.score(xTrain, yTrain))
+    print("Accuracy on Testing Set : ")
+    print(clf.score(xTest, yTest))
+    yPred=clf.predict(xTest)
+    print("Classification Report : ")
+    print(metrics.classification_report(yTest, yPred))
+    print("Confusion Matrix : ")
+    print(metrics.confusion_matrix(yTest, yPred))
+    
+print('Multinominal Naive Bayes \n')
+trainAndEvaluate(clf1, xTrain, xTest, yTrain, yTest)
+print('Linear Kernel SVC \n')
+trainAndEvaluate(clf2, xTrain, xTest, yTrain, yTest)
+print('RBF Kernel SVC \n')
+trainAndEvaluate(clf3, xTrain, xTest, yTrain, yTest)
+print("MLP Neuaral Network")
+trainAndEvaluate(clf4, xTrain, xTest, yTrain, yTest)
