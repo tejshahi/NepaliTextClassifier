@@ -1,4 +1,4 @@
-#import sklearn
+# import sklearn
 import nltk
 import scipy as sp
 from sklearn.datasets import load_files
@@ -10,30 +10,31 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 
-#CorpusDirTrain = r'E:\Datasets\16NepaliNews\16NepaliNews\Train'
-#CorpusDirTest = r'E:\Datasets\16NepaliNews\16NepaliNews\Test'
-
-CorpusDir = r'E:\Datasets\16NepaliNews\16NepaliNews\16719\raw'
-raw=load_files(CorpusDir, description=None, 
-               load_content=True,
-               encoding='utf-8',
-               decode_error='ignore')
+# CorpusDirTrain = r'E:\Datasets\16NepaliNews\16NepaliNews\Train'
+# CorpusDirTest = r'E:\Datasets\16NepaliNews\16NepaliNews\Test'
+CorpusDir = r'data/16NepaliNews/raw/'
+raw = load_files(CorpusDir, description=None,
+                 load_content=True,
+                 encoding='utf-8',
+                 decode_error='ignore')
 
 ''' Nepali Stop Words '''
 # The stop words file is copied into the stopwords directory of nltk.data\corpora folder
 
-stopWords = set(nltk.corpus.stopwords.words('nepali')) 
-
+stopWords = set(nltk.corpus.stopwords.words('nepali'))
 
 ''' Testing and Training Data '''
-xTrain, xTest, yTrain, yTest=train_test_split(raw.data,
-                                               raw.target,
-                                               test_size=0.1,
-                                               random_state=42)
+xTrain, xTest, yTrain, yTest = train_test_split(raw.data,
+                                                raw.target,
+                                                test_size=0.2,
+                                                random_state=42)
+
+
+
 ''' feature vector construction '''
 ''' Vectorizer '''
 
-tfidfVectorizer = TfidfVectorizer(tokenizer= lambda x: x.split(" "),
+tfidfVectorizer = TfidfVectorizer(tokenizer=lambda x: x.split(" "),
                                   sublinear_tf=True, encoding='utf-8',
                                   decode_error='ignore',
                                   max_df=0.5,
@@ -53,21 +54,20 @@ clf1 = Pipeline([
 # SVM Linear Kernel
 clf2 = Pipeline([
     ('vect', tfidfVectorizer),
-    ('clf', SVC(kernel='linear'))
+    ('clf', SVC(kernel='linear',random_state=42))
 ])
 # SVM RBF Kernel
 clf3 = Pipeline([
     ('vect', tfidfVectorizer),
-    ('clf', SVC(kernel='rbf'))
+    ('clf', SVC(kernel='rbf',random_state=42))
 ])
 
-#RBF Neural Network
-''' need to implemnet I couldn't find it on SKlearn'''
-#MLP Neural Network
-clf4=Pipeline([
-        ('vect', tfidfVectorizer),
-         ('clf', MLPClassifier(solver='lbfgs', alpha=1e-5,
-                    hidden_layer_sizes=(5, 2), random_state=1))
+
+# MLP Neural Network
+clf4 = Pipeline([
+    ('vect', tfidfVectorizer),
+    ('clf', MLPClassifier(solver='adam', alpha=1e-5, learning_rate='adaptive',learning_rate_init=0.001,
+                          hidden_layer_sizes=(128, 64), random_state=42))
 ])
 
 
@@ -78,7 +78,7 @@ def trainAndEvaluate(clf, xTrain, xTest, yTrain, yTest):
     print("Accuracy on Testing Set : ")
     print(clf.score(xTest, yTest))
     yPred = clf.predict(xTest)
-    
+
     print("Classification Report : ")
     print(metrics.classification_report(yTest, yPred))
     print("Confusion Matrix : ")
@@ -91,5 +91,5 @@ print('Linear SVM \n')
 trainAndEvaluate(clf2, xTrain, xTest, yTrain, yTest)
 print('RBF SVM \n')
 trainAndEvaluate(clf3, xTrain, xTest, yTrain, yTest)
-print('MLP Neural Network n')
+print('MLP Neural Network')
 trainAndEvaluate(clf4, xTrain, xTest, yTrain, yTest)
